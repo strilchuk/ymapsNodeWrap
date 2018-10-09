@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/headless_ymaps.iml" filepath="$PROJECT_DIR$/.idea/headless_ymaps.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/ymapsNodeWrap.iml" filepath="$PROJECT_DIR$/.idea/ymapsNodeWrap.iml" />
     </modules>
   </component>
 </project>

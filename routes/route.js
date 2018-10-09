@@ -2,72 +2,76 @@ var express = require('express');
 var router = express.Router();
 const puppeteer = require('puppeteer');
 const path = require('path');
+var async = require('async');
 
 var route = {"length": 0};
+var outputValue = '0';
 var browser, page;
 
 (async ()=>{
 
     browser = await puppeteer.launch({headless: false});
     page = await browser.newPage();
-
     const htmlWrapPath = path.join(path.dirname(__dirname), 'html_wrap');
-
     await page.goto('file:///' + path.join(htmlWrapPath, 'apiWrap.html'));
 
 })();
 
-
 router.get('/', function (req, res, next) {
+    pointParam = JSON.stringify(req.query.waypoints);
+    page.evaluate(
+        //Будет выполнено в контексте страницы+
+        toPoint => {
+            document.getElementById('map').innerHTML = "";
+            document.getElementById('outputValue').innerHTML = '0';
 
-        page.evaluate(
+            var myMap = new ymaps.Map("map", {
+                center: [55.76, 37.64],
+                zoom: 7
+            });
 
-            //Будет выполнено в контексте страницы+
-            () => {
+            var waypoints = [];
+            waypoints[0] = toPoint;
+            waypoints[1] = 'Москва';
 
-                var routeLength;
-
-                document.getElementById('map').innerHTML = "";
-
-                var myMap = new ymaps.Map("map", {
-                    center: [55.76, 37.64],
-                    zoom: 7
+            ymaps.route(waypoints, {
+                mapStateAutoApply: true,
+                routingMode : 'auto'
+            }).then(function (route) {
+                route.getPaths().options.set({
+                    balloonContentLayout: ymaps.templateLayoutFactory.createClass('{{ properties.humanJamsTime }}'),
+                    strokeColor: '0000ffff',
+                    opacity: 0.9
                 });
 
-                ymaps.route([
-                    'Ростов',
-                    'Москва',
-                ], {
-                    mapStateAutoApply: true,
-                    routingMode : 'auto'
-                }).then(function (route) {
-                    route.getPaths().options.set({
-                        balloonContentLayout: ymaps.templateLayoutFactory.createClass('{{ properties.humanJamsTime }}'),
-                        strokeColor: '0000ffff',
-                        opacity: 0.9
-                    });
+                document.getElementById('outputValue').innerHTML = route.getLength();
+                myMap.geoObjects.add(route);
+            });
+        }, pointParam
+        //Будет выполнено в контексте страницы-
+    );
 
-                    routeLength =route.getLength();
+    async.whilst(
+        function() { return outputValue === '0';
+        },
+        function(callback) {
 
-                    document.getElementById('outputValue').innerHTML = routeLength;
+            setTimeout(function() {
 
-                    console.log(routeLength);
+                page.evaluate(
+                    ()=>{return document.getElementById('outputValue').innerHTML}
+                ).then((returnedValue)=>{outputValue = returnedValue;});
 
-                    //
-                    myMap.geoObjects.add(route);
+                callback(null, 'stub');
 
-                    return routeLength;
-                });
-
-                //Как подождать Promise ???
-                return 207912.71;
-
-            }
-            //Будет выполнено в контексте страницы-
-        ).then((routeLengthPromise)=>{
-            route['length']= routeLengthPromise;
+            }, 100);
+        },
+        function (err, stub) {
+            route['length']= outputValue;
             res.send(route);
-        });
+        }
+    );
+
 });
 
 
