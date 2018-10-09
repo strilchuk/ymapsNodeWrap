@@ -18,7 +18,6 @@ var browser, page;
 })();
 
 
-
 router.get('/', function (req, res, next) {
 
         page.evaluate(
@@ -36,12 +35,11 @@ router.get('/', function (req, res, next) {
                 });
 
                 ymaps.route([
-                    'Королёв',
-                    { type: 'viaPoint', point: 'Мытищи' },
-                    'Химки',
-                    { type: 'wayPoint', point: [55.811511, 37.312518] }
+                    'Ростов',
+                    'Москва',
                 ], {
-                    mapStateAutoApply: true
+                    mapStateAutoApply: true,
+                    routingMode : 'auto'
                 }).then(function (route) {
                     route.getPaths().options.set({
                         balloonContentLayout: ymaps.templateLayoutFactory.createClass('{{ properties.humanJamsTime }}'),
@@ -49,11 +47,9 @@ router.get('/', function (req, res, next) {
                         opacity: 0.9
                     });
 
-                    //
-                    //routeLength = route.getLength();
-                    //document.getElementById('outputValue').innerHTML = route.getLength();
-
                     routeLength =route.getLength();
+
+                    document.getElementById('outputValue').innerHTML = routeLength;
 
                     console.log(routeLength);
 
@@ -63,7 +59,8 @@ router.get('/', function (req, res, next) {
                     return routeLength;
                 });
 
-                return routeLength;
+                //Как подождать Promise ???
+                return 207912.71;
 
             }
             //Будет выполнено в контексте страницы-
@@ -71,7 +68,7 @@ router.get('/', function (req, res, next) {
             route['length']= routeLengthPromise;
             res.send(route);
         });
-})
+});
 
 
 module.exports = router;
