@@ -10,7 +10,7 @@ var browser, page;
 
 (async ()=>{
 
-    browser = await puppeteer.launch({headless: true});
+    browser = await puppeteer.launch({headless: false});
     page = await browser.newPage();
     const htmlWrapPath = path.join(path.dirname(__dirname), 'html_wrap');
     await page.goto('file:///' + path.join(htmlWrapPath, 'apiWrap.html'));
@@ -18,7 +18,7 @@ var browser, page;
 })();
 
 router.get('/', function (req, res, next) {
-    var strWaypoints = JSON.stringify(req.query.waypoints);
+    var strWaypoints = JSON.stringify(req.query);
 
     async.series([
         function(callback) {
@@ -32,10 +32,11 @@ router.get('/', function (req, res, next) {
                             center: [55.76, 37.64],
                             zoom: 7
                         });
+                        var jsonQuery = JSON.parse(waypoints);
 
                         var waypointsArray = [];
-                        waypointsArray[0] = waypoints;
-                        waypointsArray[1] = 'Москва';
+                        waypointsArray[0] = jsonQuery['from'];
+                        waypointsArray[1] = jsonQuery['to'];
 
                         ymaps.route(waypointsArray, {
                             mapStateAutoApply: true,
