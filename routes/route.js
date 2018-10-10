@@ -10,7 +10,7 @@ var browser, page;
 
 (async ()=>{
 
-    browser = await puppeteer.launch({headless: false});
+    browser = await puppeteer.launch({headless: true});
     page = await browser.newPage();
     const htmlWrapPath = path.join(path.dirname(__dirname), 'html_wrap');
     await page.goto('file:///' + path.join(htmlWrapPath, 'apiWrap.html'));
@@ -18,59 +18,72 @@ var browser, page;
 })();
 
 router.get('/', function (req, res, next) {
-    pointParam = JSON.stringify(req.query.waypoints);
-    page.evaluate(
-        //Будет выполнено в контексте страницы+
-        toPoint => {
-            document.getElementById('map').innerHTML = "";
-            document.getElementById('outputValue').innerHTML = '0';
+    var strWaypoints = JSON.stringify(req.query.waypoints);
 
-            var myMap = new ymaps.Map("map", {
-                center: [55.76, 37.64],
-                zoom: 7
-            });
-
-            var waypoints = [];
-            waypoints[0] = toPoint;
-            waypoints[1] = 'Москва';
-
-            ymaps.route(waypoints, {
-                mapStateAutoApply: true,
-                routingMode : 'auto'
-            }).then(function (route) {
-                route.getPaths().options.set({
-                    balloonContentLayout: ymaps.templateLayoutFactory.createClass('{{ properties.humanJamsTime }}'),
-                    strokeColor: '0000ffff',
-                    opacity: 0.9
-                });
-
-                document.getElementById('outputValue').innerHTML = route.getLength();
-                myMap.geoObjects.add(route);
-            });
-        }, pointParam
-        //Будет выполнено в контексте страницы-
-    );
-
-    async.whilst(
-        function() { return outputValue === '0';
-        },
+    async.series([
         function(callback) {
-
-            setTimeout(function() {
-
                 page.evaluate(
-                    ()=>{return document.getElementById('outputValue').innerHTML}
-                ).then((returnedValue)=>{outputValue = returnedValue;});
+                    //Будет выполнено в контексте страницы+
+                    waypoints => {
+                        document.getElementById('map').innerHTML = "";
+                        document.getElementById('outputValue').innerHTML = '0';
 
-                callback(null, 'stub');
+                        var myMap = new ymaps.Map("map", {
+                            center: [55.76, 37.64],
+                            zoom: 7
+                        });
 
-            }, 100);
-        },
-        function (err, stub) {
-            route['length']= outputValue;
-            res.send(route);
-        }
-    );
+                        var waypointsArray = [];
+                        waypointsArray[0] = waypoints;
+                        waypointsArray[1] = 'Москва';
+
+                        ymaps.route(waypointsArray, {
+                            mapStateAutoApply: true,
+                            routingMode : 'auto'
+                        }).then(function (route) {
+                            route.getPaths().options.set({
+                                balloonContentLayout: ymaps.templateLayoutFactory.createClass('{{ properties.humanJamsTime }}'),
+                                strokeColor: '0000ffff',
+                                opacity: 0.9
+                            });
+
+                            document.getElementById('outputValue').innerHTML = route.getLength();
+                            myMap.geoObjects.add(route);
+                        });
+                    }, strWaypoints
+                    //Будет выполнено в контексте страницы-
+                );
+                callback(null, 'one');
+            },
+            function(callback) {
+                outputValue = '0';
+
+                callback(null, 'two');
+            }
+        ],
+        // optional callback
+        function(err, results) {
+            async.whilst(
+                function() { return outputValue === '0';
+                },
+                function(callback) {
+
+                    setTimeout(function() {
+
+                        page.evaluate(
+                            ()=>{return document.getElementById('outputValue').innerHTML}
+                        ).then((returnedValue)=>{outputValue = returnedValue;});
+
+                        callback(null, 'stub');
+
+                    }, 100);
+                },
+                function (err, stub) {
+                    route['length']= outputValue;
+                    res.send(route);
+                }
+            );
+        });
 
 });
 
