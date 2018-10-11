@@ -3,7 +3,7 @@
 $pointsFromArray = 'Москва','Ростов-на-Дону','Батайск','Абаза','Арзамас','Белозерск','Беслан','Буйнакск'
 $pointsToArray = 'Краснодар','Азов','Кемерово','Абакан','Аксай','Барнаул','Волжск'
 
-
+Write-Host 'Start load test'
 
 foreach ($pointFrom in $pointsFromArray){
 
@@ -16,3 +16,5 @@ foreach ($pointFrom in $pointsFromArray){
     }
 
 }
+
+Write-Host 'End load test'

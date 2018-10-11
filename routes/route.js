@@ -10,7 +10,7 @@ var browser, page;
 
 (async ()=>{
 
-    browser = await puppeteer.launch({headless: true, args: ['--no-sandbox', '--disable-setuid-sandbox']});
+    browser = await puppeteer.launch({args: ['--no-sandbox', '--disable-setuid-sandbox']});
     page = await browser.newPage();
     const htmlWrapPath = path.join(path.dirname(__dirname), 'html_wrap');
     await page.goto('file:///' + path.join(htmlWrapPath, 'apiWrap.html'));
