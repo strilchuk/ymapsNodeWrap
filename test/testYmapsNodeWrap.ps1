@@ -8,8 +8,7 @@ Write-Host 'Start load test'
 foreach ($pointFrom in $pointsFromArray){
 
     foreach ($pointTo in $pointsToArray){
-    
-    
+
     $res = Invoke-WebRequest -Uri ('http://192.168.0.18:49160/route?from='+$pointFrom+'&'+'to='+$pointTo)
     Write-Host $res.Content
     
