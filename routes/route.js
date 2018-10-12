@@ -18,13 +18,14 @@ var browser, page;
 })();
 
 router.get('/', function (req, res, next) {
-    var strWaypoints = JSON.stringify(req.query);
+
+    var strQuery = JSON.stringify(req.query);
 
     async.series([
         function(callback) {
                 page.evaluate(
                     //Будет выполнено в контексте страницы+
-                    waypoints => {
+                    evaluateArg => {
                         document.getElementById('map').innerHTML = "";
                         document.getElementById('outputValue').innerHTML = '0';
 
@@ -32,13 +33,31 @@ router.get('/', function (req, res, next) {
                             center: [55.76, 37.64],
                             zoom: 7
                         });
-                        var jsonQuery = JSON.parse(waypoints);
 
-                        var waypointsArray = [];
-                        waypointsArray[0] = jsonQuery['from'];
-                        waypointsArray[1] = jsonQuery['to'];
+                        //Обработка запроса
+                        var points = [];
+                        var re = /^\d{1,3}\.\d+,\d{1,3}\.\d+$/;
 
-                        ymaps.route(waypointsArray, {
+                        var jsonQuery = JSON.parse(evaluateArg);
+                        var strQuery = jsonQuery['waypoints'];
+                        var arrayQuery = strQuery.split('|');
+
+                        for (i = 0; i < arrayQuery.length; i++ ) {
+
+                            points[i] = {type:'wayPoint', point:''};
+
+                            if(re.test(arrayQuery[i])){
+                                points[i].point = arrayQuery[i].split(',');
+                            } else {
+                                points[i].point = arrayQuery[i];
+
+                            }
+
+                        }
+
+                        //
+
+                        ymaps.route(points, {
                             mapStateAutoApply: true,
                             routingMode : 'auto'
                         }).then(function (route) {
@@ -51,7 +70,7 @@ router.get('/', function (req, res, next) {
                             document.getElementById('outputValue').innerHTML = route.getLength();
                             myMap.geoObjects.add(route);
                         });
-                    }, strWaypoints
+                    }, strQuery
                     //Будет выполнено в контексте страницы-
                 );
                 callback(null, 'one');

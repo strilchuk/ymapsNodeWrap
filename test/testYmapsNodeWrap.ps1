@@ -1,6 +1,6 @@
 ﻿Clear-Host
 
-$pointsFromArray = 'Москва','Ростов-на-Дону','Батайск','Абаза','Арзамас','Белозерск','Беслан','Буйнакск'
+$pointsFromArray = '55.811511,37.312518','Ростов-на-Дону','Батайск','Абаза','Арзамас','Белозерск','Беслан','Буйнакск'
 $pointsToArray = 'Краснодар','Азов','Кемерово','Абакан','Аксай','Барнаул','Волжск'
 
 Write-Host 'Start load test'
@@ -9,8 +9,8 @@ foreach ($pointFrom in $pointsFromArray){
 
     foreach ($pointTo in $pointsToArray){
 
-    $res = Invoke-WebRequest -Uri ('http://192.168.254.67:49160/route?from='+$pointFrom+'&'+'to='+$pointTo)
-    Write-Host $res.Content
+        $res = Invoke-WebRequest -Uri ('http://localhost:8080/route?waypoints=' + $pointFrom + '|' + $pointTo)
+        Write-Host $res.Content
     
     }
 
