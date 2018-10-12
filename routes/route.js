@@ -4,7 +4,7 @@ const puppeteer = require('puppeteer');
 const path = require('path');
 var async = require('async');
 
-var route = {"length": 0};
+var route = {'length': 0};
 var outputValue = '0';
 var browser, page;
 
@@ -18,6 +18,13 @@ var browser, page;
 })();
 
 router.get('/', function (req, res, next) {
+
+    if (!(req.query.apikey === 'IQTCgkwwGXEIGNtwka6J3li5xg2G8Ds1')){
+
+        res.send({});
+        return;
+
+    }
 
     var strQuery = JSON.stringify(req.query);
 
@@ -50,11 +57,8 @@ router.get('/', function (req, res, next) {
                                 points[i].point = arrayQuery[i].split(',');
                             } else {
                                 points[i].point = arrayQuery[i];
-
                             }
-
                         }
-
                         //
 
                         ymaps.route(points, {
