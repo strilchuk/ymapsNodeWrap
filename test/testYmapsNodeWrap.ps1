@@ -9,7 +9,7 @@ foreach ($pointFrom in $pointsFromArray){
 
     foreach ($pointTo in $pointsToArray){
 
-        $res = Invoke-WebRequest -Uri ('http://localhost:8080/route?waypoints=' + $pointFrom + '|' + $pointTo)
+        $res = Invoke-WebRequest -Uri ('http://localhost:8080/route?apikey=IQTCgkwwGXEIGNtwka6J3li5xg2G8Ds1&waypoints=' + $pointFrom + '|' + $pointTo)
         Write-Host $res.Content
     
     }

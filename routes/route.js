@@ -4,7 +4,7 @@ const puppeteer = require('puppeteer');
 const path = require('path');
 var async = require('async');
 
-var route = {'length': 0};
+var route = {length: 0};
 var outputValue = '0';
 var browser, page;
 
@@ -19,11 +19,9 @@ var browser, page;
 
 router.get('/', function (req, res, next) {
 
-    if (!(req.query.apikey === 'IQTCgkwwGXEIGNtwka6J3li5xg2G8Ds1')){
-
+    if (req.query.apikey !== 'IQTCgkwwGXEIGNtwka6J3li5xg2G8Ds1'){
         res.send({});
         return;
-
     }
 
     var strQuery = JSON.stringify(req.query);
@@ -36,10 +34,10 @@ router.get('/', function (req, res, next) {
                         document.getElementById('map').innerHTML = "";
                         document.getElementById('outputValue').innerHTML = '0';
 
-                        var myMap = new ymaps.Map("map", {
+                        /*var myMap = new ymaps.Map("map", {
                             center: [55.76, 37.64],
                             zoom: 7
-                        });
+                        });*/
 
                         //Обработка запроса
                         var points = [];
@@ -65,27 +63,28 @@ router.get('/', function (req, res, next) {
                             mapStateAutoApply: true,
                             routingMode : 'auto'
                         }).then(function (route) {
-                            route.getPaths().options.set({
+                            /*route.getPaths().options.set({
                                 balloonContentLayout: ymaps.templateLayoutFactory.createClass('{{ properties.humanJamsTime }}'),
                                 strokeColor: '0000ffff',
                                 opacity: 0.9
-                            });
+                            });*/
 
                             document.getElementById('outputValue').innerHTML = route.getLength();
-                            myMap.geoObjects.add(route);
+
+                            /*yMap.geoObjects.add(route);*/
                         });
                     }, strQuery
                     //Будет выполнено в контексте страницы-
                 );
-                callback(null, 'one');
+                callback(null, '');
             },
             function(callback) {
                 outputValue = '0';
 
-                callback(null, 'two');
+                callback(null, '');
             }
         ],
-        // optional callback
+
         function(err, results) {
             async.whilst(
                 function() { return outputValue === '0';
@@ -103,7 +102,7 @@ router.get('/', function (req, res, next) {
                     }, 100);
                 },
                 function (err, stub) {
-                    route['length']= outputValue;
+                    route.length= outputValue;
                     res.send(route);
                 }
             );
